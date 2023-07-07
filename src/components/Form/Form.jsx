@@ -1,15 +1,19 @@
-import useLocalStorage from 'components/Hooks/useLocalStorage';
-import PropTypes from 'prop-types';
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { addContact } from 'redux/contactsSlice';
 import shortid from 'shortid';
 import { AiOutlineUserAdd } from 'react-icons/ai';
 import { FormContact, Label, Input, BtnAdd } from './Form.styled';
+import { getVisibleContacts } from 'redux/selector';
 
-const Form = ({ onSubmit }) => {
-  const [name, setName] = useLocalStorage('name', '');
-  const [number, setNumber] = useLocalStorage('number', '');
+const Form = () => {
+  const [name, setName] = useState('');
+  const [number, setNumber] = useState('');
 
-  const nameInputId = shortid.generate();
-  const numberInputId = shortid.generate();
+  const contacts = useSelector(getVisibleContacts);
+  const dispatch = useDispatch();
 
   const handleChange = ({ target }) => {
     const { name, value } = target;
@@ -23,18 +27,22 @@ const Form = ({ onSubmit }) => {
       default:
         return;
     }
-    // ============================================
-    // const { name, value } = target;
-    // if (name === 'name') {
-    //   setName(value);
-    // } else if (name === 'number') {
-    //   setNumber(value);
-    // }
   };
 
   const handleSubmit = event => {
     event.preventDefault();
-    onSubmit(name, number);
+
+    const existingContact = contacts.find(contact => contact.name === name);
+    if (existingContact) {
+      return toast(`${name} is already in contacts`);
+    }
+
+    const contact = {
+      id: shortid.generate(),
+      name,
+      number,
+    };
+    dispatch(addContact(contact));
     reset();
   };
 
@@ -45,7 +53,7 @@ const Form = ({ onSubmit }) => {
 
   return (
     <FormContact onSubmit={handleSubmit}>
-      <Label htmlFor={nameInputId}>
+      <Label>
         Name:
         <Input
           type="text"
@@ -56,10 +64,9 @@ const Form = ({ onSubmit }) => {
           value={name}
           onChange={handleChange}
           placeholder="Name..."
-          id={nameInputId}
         />
       </Label>
-      <Label htmlFor={numberInputId}>
+      <Label>
         Number:
         <Input
           type="tel"
@@ -70,19 +77,15 @@ const Form = ({ onSubmit }) => {
           value={number}
           onChange={handleChange}
           placeholder="+380..."
-          id={numberInputId}
         />
       </Label>
       <BtnAdd type="submit">
         Add contact
         <AiOutlineUserAdd />
       </BtnAdd>
+      <ToastContainer autoClose={2000} />
     </FormContact>
   );
-};
-
-Form.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
 };
 
 export default Form;
