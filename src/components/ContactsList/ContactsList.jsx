@@ -1,20 +1,18 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { deleteContact } from 'redux/contactsSlice';
-import PropTypes from 'prop-types';
 import { AiOutlineUserDelete } from 'react-icons/ai';
 import { Container, Total, List, Item, Name, Number, BtnDelete } from './ContactsList.styled';
+import { getVisibleContacts } from 'redux/selector';
 
-const ContactsList = ({ contacts }) => {
+const ContactsList = () => {
+  const contacts = useSelector(getVisibleContacts);
   const totalContacts = contacts.length;
   const dispatch = useDispatch();
 
   return (
     <Container>
-      <Total>
-        all:
-        {totalContacts}
-      </Total>
+      <Total> all:{totalContacts} </Total>
       <List>
         {contacts.map(({ id, name, number }) => (
           <Item key={id}>
@@ -29,16 +27,6 @@ const ContactsList = ({ contacts }) => {
       </List>
     </Container>
   );
-};
-
-ContactsList.propTypes = {
-  contacts: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      number: PropTypes.string.isRequired,
-    })
-  ).isRequired,
 };
 
 export default ContactsList;
